@@ -12,9 +12,9 @@ using std::endl;
 
 //--------------------------------------------------
 // Constructors
-tree::tree(): mu(0.0),v(0),c(0),p(0),l(0),r(0) {}
-tree::tree(double m): mu(m),v(0),c(0),p(0),l(0),r(0) {}
-tree::tree(const tree& n): mu(0.0),v(0),c(0),p(0),l(0),r(0) { cp(this,&n); }
+tree::tree(): mu(0.0),v(0),c(0),p(0),l(0),r(0),c_value(0.0) {}
+tree::tree(double m): mu(m),v(0),c(0),p(0),l(0),r(0),c_value(0.0) {}
+tree::tree(const tree& n): mu(0.0),v(0),c(0),p(0),l(0),r(0),c_value(0.0) { cp(this,&n); }
 
 //--------------------------------------------------
 // Operators
@@ -38,6 +38,7 @@ std::ostream& operator<<(std::ostream& os, const tree& t)
 		os << nds[i]->nid() << " ";
 		os << nds[i]->getv() << " ";
 		os << nds[i]->getc() << " ";
+		os << nds[i]->getc_value() << " ";
 		os << nds[i]->getm() << endl;
 	}
 	return os;
@@ -63,7 +64,7 @@ std::istream& operator>>(std::istream& is, tree& t)
 	//read in vector of node information----------
 	std::vector<node_info> nv(nn);
 	for(size_t i=0;i!=nn;i++) {
-		is >> nv[i].id >> nv[i].v >> nv[i].c >> nv[i].m;
+		is >> nv[i].id >> nv[i].v >> nv[i].c >> nv[i].c_value >> nv[i].m;
 		if(!is) {
 		  Rcpp::Rcout << ">> error: unable to read node info, on node  " << i+1 << endl;
 			return is;
@@ -72,13 +73,13 @@ std::istream& operator>>(std::istream& is, tree& t)
 
 	//first node has to be the top one
 	pts[1] = &t; //careful! this is not the first pts, it is pointer of id 1.
-	t.setv(nv[0].v); t.setc(nv[0].c); t.setm(nv[0].m);
+	t.setv(nv[0].v); t.setc_value(0.0); t.setm(nv[0].m); t.setc(nv[0].c);
 	t.p=0;
 
 	//now loop through the rest of the nodes knowing parent is already there.
 	for(size_t i=1;i!=nv.size();i++) {
 		tree::tree_p np = new tree;
-		np->v = nv[i].v; np->c=nv[i].c; np->mu=nv[i].m;
+		np->v = nv[i].v; np->c_value=0.0; np->mu=nv[i].m; np->c = nv[i].c;
 		tid = nv[i].id;
 		pts[tid] = np;
 		pid = tid/2;
@@ -152,8 +153,8 @@ std::istream& operator>>(std::istream& is, xinfo& xi)
 // };
 
 // x is a pointer to a feature vector
-// xi is a Node 
-// if the v'th value of x is less than cut point 
+// xi is a Node
+// if the v'th value of x is less than cut point
 
 //tree structure
 //    tree_p p; //parent

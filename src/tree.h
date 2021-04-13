@@ -1,4 +1,4 @@
-// tree.h:  tree class and io streams to read/write 
+// tree.h:  tree class and io streams to read/write
 //          trees and cutpoints
 //--------------------------------------------------
 #ifndef GUARD_tree_h
@@ -23,9 +23,9 @@ Fundamentally, we have a tree not a node.
 
 /*
 three ways to access a node:
-(i) node id: is the integer assigned by the node numbering system 
+(i) node id: is the integer assigned by the node numbering system
      assuming they are all there
-(ii) node ind: is the index into the array of 
+(ii) node ind: is the index into the array of
    node(tree) pointers returned by getnodes or getbots or getnogs
    which means you go left to right across the bottom of the tree
 (iii) by its pointer (should only "give out" const pointers)
@@ -36,6 +36,7 @@ struct node_info {
    std::size_t id; //node id
    std::size_t v;  //variable
    std::size_t c;  //cut point
+   double c_value;
    double m;       //mu
 };
 
@@ -53,7 +54,7 @@ public:
    typedef std::vector<tree_p> npv;   //Node Pointer Vector
    typedef std::vector<tree_cp> cnpv; //const Node Pointer Vector
 
-   // C++ Friend Functions. A friend function of a class is defined outside that class' scope but it has the right to access all private and protected members of the class. 
+   // C++ Friend Functions. A friend function of a class is defined outside that class' scope but it has the right to access all private and protected members of the class.
    //------------------------------
    //friends
    friend std::istream& operator>>(std::istream&, tree&);
@@ -138,11 +139,13 @@ public:
    void setm(double mu) {this->mu=mu;}
    void setv(size_t v) {this->v = v;}
    void setc(size_t c) {this->c = c;}
+   void setc_value(double c_value) {this->c_value = c_value;}
    //get----------
-   double getm() const {return mu;} 
+   double getm() const {return mu;}
    size_t getv() const {return v;}
    size_t getc() const {return c;}
-   tree_p getp() const {return p;}  //should this be tree_cp? 
+   double getc_value() const {return c_value;}
+   tree_p getp() const {return p;}  //should this be tree_cp?
    tree_p getl() const {return l;}
    tree_p getr() const {return r;}
 
@@ -156,8 +159,8 @@ public:
    void pr() const; //to screen, pc is "print children"
 
    //birth death using nid----------
-   bool birth(size_t nid,size_t v, size_t c, double ml, double mr); 
-   bool death(size_t nid, double mu); 
+   bool birth(size_t nid,size_t v, size_t c, double ml, double mr);
+   bool death(size_t nid, double mu);
    //vectors of node pointers----------
    void getbots(npv& bv);             //get bottom nodes
    void getnogs(npv& nv);             //get nog nodes (no granchildren)
@@ -180,7 +183,7 @@ public:
    void swaplr();               //swap this tree node's left and right branches.  Does NOT check that this is not a bottom node!
    size_t nuse(size_t v);             //how many times var v is used in a rule.
    void varsplits(std::set<size_t> &splits, size_t v); //splitting values for var v.
-   
+
    //------------------------------
    //node functions
    size_t depth() const;      //depth of a node
@@ -195,11 +198,12 @@ public:
 private:
    //------------------------------
    //parameter for node
-   double mu; 
+   double mu;
    //------------------------------
    //rule: left if x[v] < xinfo[v][c]
-   size_t v; 
-   size_t c; 
+   size_t v;
+   size_t c;
+   double c_value;
    //------------------------------
    //tree structure
    tree_p p; //parent
@@ -208,8 +212,8 @@ private:
    //------------------------------
    //utility functions
    void cp(tree_p n,  tree_cp o); //copy tree o to n
-   void birthp(tree_p np,size_t v, size_t c, double ml, double mr); 
-   void deathp(tree_p nb, double mu); //kill children of nog node nb 
+   void birthp(tree_p np,size_t v, size_t c, double ml, double mr);
+   void deathp(tree_p nb, double mu); //kill children of nog node nb
 };
 std::istream& operator>>(std::istream&, tree&);
 std::ostream& operator<<(std::ostream&, const tree&);
