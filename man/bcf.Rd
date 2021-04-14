@@ -35,7 +35,8 @@ bcf(
   include_pi = "control",
   use_muscale = TRUE,
   use_tauscale = TRUE,
-  verbose = FALSE
+  verbose = FALSE,
+  warm_start = NULL
 )
 }
 \arguments{
@@ -102,6 +103,9 @@ or "both" are HIGHLY recommended with observational data.}
 \item{use_tauscale}{Use a half-Normal prior on the scale of tau.}
 
 \item{verbose}{logical, whether to print log of MCMC iterations, defaults to FALSE.}
+
+\item{warm_start}{An XBCF fit object, which will be used to initialize warm start-BCF.
+Significantly smaller nburn (10) and nsim (100) should be supplied in the case of warm start-BCF.}
 }
 \value{
 A fitted bcf object that is a list with elements
