@@ -120,10 +120,10 @@ warmstart.bcf <- function(xbcf_fit,
   x_m = matrix(x_moderate, ncol=ncol(x_moderate))
 
   if(include_pi=="both" | include_pi=="control") {
-    x_c = cbind(pihat, x_control)
+    x_c = cbind(x_control, pihat)
   }
   if(include_pi=="both" | include_pi=="moderate") {
-    x_m = cbind(pihat, x_moderate)
+    x_m = cbind(x_moderate, pihat)
   }
   cutpoint_list_c = lapply(1:ncol(x_c), function(i) .cp_quantile(x_c[,i]))
   cutpoint_list_m = lapply(1:ncol(x_m), function(i) .cp_quantile(x_m[,i]))
