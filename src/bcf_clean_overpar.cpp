@@ -27,8 +27,8 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 List bcfoverparRcppClean(NumericVector y_, NumericVector z_, NumericVector w_,
-                  NumericVector x_con_, NumericVector x_mod_, 
-                  List x_con_info_list, List x_mod_info_list, 
+                  NumericVector x_con_, NumericVector x_mod_,
+                  List x_con_info_list, List x_mod_info_list,
                   arma::mat random_des, //needs to come in with n rows no matter what(?)
                   arma::mat random_var, arma::mat random_var_ix, //random_var_ix*random_var = diag(Var(random effects))
                   double random_var_df,
@@ -64,8 +64,8 @@ List bcfoverparRcppClean(NumericVector y_, NumericVector z_, NumericVector w_,
   //double lambda = 1.0; //this one really needs to be set
   //double nu = 3.0;
   //double kfac=2.0; //original is 2.0
-  
-  Logger logger = Logger();  
+
+  Logger logger = Logger();
   char logBuff[100];
 
   bool log_level = false;
@@ -111,7 +111,7 @@ List bcfoverparRcppClean(NumericVector y_, NumericVector z_, NumericVector w_,
   double ybar = allys.sy/n; //sample mean
   double shat = sqrt((allys_y2-n*ybar*ybar)/(n-1)); //sample standard deviation
   /*****************************************************************************
-  /* Read, format  weights 
+  /* Read, format  weights
   *****************************************************************************/
   double* w = new double[n]; //y-(allfit-ftemp) = y-allfit+ftemp
 
@@ -190,7 +190,7 @@ List bcfoverparRcppClean(NumericVector y_, NumericVector z_, NumericVector w_,
 
   //--------------------------------------------------
   //prior parameters
-  // PX scale parameter for b: 
+  // PX scale parameter for b:
   double bscale_prec = 2;
   double bscale0 = -0.5;
   double bscale1 = 0.5;
@@ -230,9 +230,9 @@ List bcfoverparRcppClean(NumericVector y_, NumericVector z_, NumericVector w_,
   for(size_t i=0;i<n;i++) allfit_con[i] = ybar;
   double* r_con = new double[n]; //y-(allfit-ftemp) = y-allfit+ftemp
   dinfo di_con;
-  di_con.n=n; 
-  di_con.p = p_con; 
-  di_con.x = &x_con[0]; 
+  di_con.n=n;
+  di_con.p = p_con;
+  di_con.x = &x_con[0];
   di_con.y = r_con; //the y for each draw will be the residual
 
   //--------------------------------------------------
@@ -241,9 +241,9 @@ List bcfoverparRcppClean(NumericVector y_, NumericVector z_, NumericVector w_,
   for(size_t i=0;i<n;i++) allfit_mod[i] = (z_[i]*bscale1 + (1-z_[i])*bscale0)*trt_init;
   double* r_mod = new double[n]; //y-(allfit-ftemp) = y-allfit+ftemp
   dinfo di_mod;
-  di_mod.n=n; 
-  di_mod.p=p_mod; 
-  di_mod.x = &x_mod[0]; 
+  di_mod.n=n;
+  di_mod.p=p_mod;
+  di_mod.x = &x_mod[0];
   di_mod.y = r_mod; //the y for each draw will be the residual
 
   //--------------------------------------------------
@@ -295,8 +295,8 @@ List bcfoverparRcppClean(NumericVector y_, NumericVector z_, NumericVector w_,
 
 
   // The default output precision is of C++ is 5 or 6 dp, depending on compiler.
-  // I don't have much justification for 32, but it seems like a sensible number   
-  int save_tree_precision = 32; 
+  // I don't have much justification for 32, but it seems like a sensible number
+  int save_tree_precision = 32;
 
   //save stuff to tree file
   treef_con << std::setprecision(save_tree_precision) << xi_con << endl; //cutpoints
@@ -319,7 +319,7 @@ List bcfoverparRcppClean(NumericVector y_, NumericVector z_, NumericVector w_,
   int time1 = time(&tp);
 
   size_t save_ctr = 0;
-  bool verbose_itr = false; 
+  bool verbose_itr = false;
 
   if(prior_sample) {
     for(int k=0; k<n; k++) y[k] = gen.normal(allfit[k], sigma);
@@ -417,7 +417,7 @@ List bcfoverparRcppClean(NumericVector y_, NumericVector z_, NumericVector w_,
 
         allfit[k]     = allfit[k]     -mscale*ftemp[k];
         allfit_con[k] = allfit_con[k] -mscale*ftemp[k];
-        
+
         r_con[k] = (y[k]-allfit[k])/mscale;
 
         if(r_con[k] != r_con[k]) {
@@ -428,12 +428,12 @@ List bcfoverparRcppClean(NumericVector y_, NumericVector z_, NumericVector w_,
         }
       }
 
-      
+
 
       if(verbose_itr && printTrees){
         logger.getVectorHead(weight, logBuff);
         Rcout << "\n weight: " <<  logBuff << "\n\n";
-      } 
+      }
       logger.log("Starting Birth / Death Processing");
       logger.startContext();
       bd(t_con[iTreeCon], // tree& x
@@ -597,7 +597,7 @@ List bcfoverparRcppClean(NumericVector y_, NumericVector z_, NumericVector w_,
             weight_het,
             gen);
       logger.stopContext();
-      
+
 
 
       logger.log("Attempting to Print Tree Post drmuhet \n");
@@ -722,9 +722,9 @@ List bcfoverparRcppClean(NumericVector y_, NumericVector z_, NumericVector w_,
       if(verbose_itr){
         Rcout << "Original pi_mod.tau : " <<  pi_mod.tau << "\n";
       }
-      
+
       pi_mod.tau   = mod_sd/(sqrt(delta_mod)*sqrt((double) ntree_mod));
-      
+
       if(verbose_itr){
         Rcout << "New pi_mod.tau : " <<  pi_mod.tau << "\n\n";
       }
@@ -800,13 +800,13 @@ List bcfoverparRcppClean(NumericVector y_, NumericVector z_, NumericVector w_,
         logger.log("Updating pi_con.tau");
         Rcout << "Original pi_con.tau : " <<  pi_con.tau << "\n";
       }
-      
+
       pi_con.tau   = con_sd/(sqrt(delta_con)*sqrt((double) ntree_con));
-      
+
       if(verbose_itr){
         Rcout << "New pi_con.tau : " <<  pi_con.tau << "\n\n";
       }
-      
+
 
     } else {
       mscale = 1.0;
@@ -954,7 +954,9 @@ List bcfoverparRcppClean(NumericVector y_, NumericVector z_, NumericVector w_,
   treef_mod.close();
 
   return(List::create(_["yhat_post"] = yhat_post, _["m_post"] = m_post, _["b_post"] = b_post,
-                      _["sigma"] = sigma_post, _["msd"] = msd_post, _["bsd"] = bsd_post, _["b0"] = b0_post, _["b1"] = b1_post, 
-                      _["gamma"] = gamma_post, _["random_var_post"] = random_var_post
+                      _["sigma"] = sigma_post, _["msd"] = msd_post, _["bsd"] = bsd_post, _["b0"] = b0_post, _["b1"] = b1_post,
+                      _["gamma"] = gamma_post, _["random_var_post"] = random_var_post,
+                      _["pi_con_tau"] = pi_con.tau, _["pi_con_sigma"] = pi_con.sigma,
+                      _["pi_mod_tau"] = pi_mod.tau, _["pi_mod_sigma"] = pi_mod.sigma
   ));
 }

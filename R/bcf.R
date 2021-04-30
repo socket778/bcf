@@ -278,16 +278,6 @@ bcf <- function(y, z, x_control, x_moderate=x_control, pihat, w = NULL,
   if(nburn<1000) warning("A low (<1000) value for nburn was supplied")
   if(nsim*nburn<1000) warning("A low (<1000) value for total iterations after burn-in was supplied")
 
-  if(!is.null(warm_start)) {
-      if (class(warm_start) != "XBCF") {
-        stop("warm_start can only use an object of class XBCF for initialization")
-      }
-      pi_con_tau = sqrt(warm_start$model_params$tau_pr)
-      pi_mod_tau = sqrt(warm_start$model_params$tau_trt)
-      ntree_control = warm_start$model_params$num_trees_pr
-      ntree_moderate = warm_start$model_params$num_trees_trt
-      n_chains = warm_start$model_params$num_sweeps-warm_start$model_params$burnin
-  }
 
   ### TODO range check on parameters
 
@@ -325,6 +315,51 @@ bcf <- function(y, z, x_control, x_moderate=x_control, pihat, w = NULL,
   con_sd = ifelse(abs(2*sdy - sd_control)<1e-6, 2, sd_control/sdy)
   mod_sd = ifelse(abs(sdy - sd_moderate)<1e-6, 1, sd_moderate/sdy)/ifelse(use_tauscale,0.674,1) # if HN make sd_moderate the prior median
 
+  # get all needed parameters for warmstart initialization
+  if(!is.null(warm_start)) {
+      # check if an XBCF object is provided
+      if (class(warm_start) != "XBCF") {
+        stop("warm_start can only use an object of class XBCF for initialization")
+      }
+      ntree_control = warm_start$model_params$num_trees_pr
+      ntree_moderate = warm_start$model_params$num_trees_trt
+      n_chains = warm_start$model_params$num_sweeps-warm_start$model_params$burnin
+
+      tree_con_name = paste0(save_tree_directory, '/', 'con_trees_ini.txt')
+      tree_mod_name = paste0(save_tree_directory, '/', 'mod_trees_ini.txt')
+
+      # initial run of BCF to extract parameters for initialization (only need 1 iteration)
+      fitbcf_ini = bcfoverparRcppClean(y_ = yscale[perm], z_ = z[perm], w_ = w[perm],
+                                  x_con_ = t(x_c[perm,,drop=FALSE]), x_mod_ = t(x_m[perm,,drop=FALSE]),
+                                  x_con_info_list = cutpoint_list_c,
+                                  x_mod_info_list = cutpoint_list_m,
+                                  random_des = matrix(1),
+                                  random_var = matrix(1),
+                                  random_var_ix = matrix(1),
+                                  random_var_df = 3,
+                                  burn = 0, nd = 1, thin = 1,
+                                  ntree_mod = ntree_moderate, ntree_con = ntree_control,
+                                  lambda = lambda, nu = nu,
+                                  con_sd = con_sd,
+                                  mod_sd = mod_sd, # if HN make sd_moderate the prior median
+                                  mod_alpha = base_moderate,
+                                  mod_beta = power_moderate,
+                                  con_alpha = base_control,
+                                  con_beta = power_control,
+                                  treef_con_name_ = tree_con_name,
+                                  treef_mod_name_ = tree_mod_name,
+                                  status_interval = update_interval,
+                                  use_mscale = use_muscale, use_bscale = use_tauscale,
+                                  b_half_normal = TRUE, verbose_sigma=verbose)
+
+
+      pi_con_tau = fitbcf_ini$pi_con_tau
+      pi_mod_tau = fitbcf_ini$pi_mod_tau
+      pi_con_sigma = fitbcf_ini$pi_con_sigma
+      pi_mod_sigma = fitbcf_ini$pi_mod_sigma
+
+  }
+
   RcppParallel::setThreadOptions(numThreads=n_threads)
 
   do_type_config <- .get_do_type(n_cores)
@@ -343,11 +378,11 @@ bcf <- function(y, z, x_control, x_moderate=x_control, pihat, w = NULL,
 
     if(!is.null(warm_start)) {
       i = iChain + warm_start$model_params$burnin # adjust iterator
-      pi_con_sigma = warm_start$sigma0_draws[2,i] / warm_start$a_draws[i, 1]
-      pi_mod_sigma = warm_start$sigma0_draws[2,i]
+      #pi_con_sigma = warm_start$sigma0_draws[2,i] / warm_start$a_draws[i, 1]
+      #pi_mod_sigma = warm_start$sigma0_draws[2,i]
       bscale0_ini = warm_start$b_draws[i, 1]
       bscale1_ini = warm_start$b_draws[i, 2]
-      sigma_ini = warm_start$sigma0_draws[2,i]
+      sigma_ini = warm_start$sigma0_draws[1,i]
 
       treedraws_con = as.vector(warm_start$treedraws_pr[i])
       treedraws_mod = as.vector(warm_start$treedraws_trt[i])
