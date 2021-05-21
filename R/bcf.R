@@ -286,10 +286,10 @@ bcf <- function(y, z, x_control, x_moderate=x_control, pihat, w = NULL,
   x_m = matrix(x_moderate, ncol=ncol(x_moderate))
 
   if(include_pi=="both" | include_pi=="control") {
-    x_c = cbind(x_control, pihat)
+    x_c = cbind(pihat, x_control)
   }
   if(include_pi=="both" | include_pi=="moderate") {
-    x_m = cbind(x_moderate, pihat)
+    x_m = cbind(pihat, x_moderate)
   }
   cutpoint_list_c = lapply(1:ncol(x_c), function(i) .cp_quantile(x_c[,i]))
   cutpoint_list_m = lapply(1:ncol(x_m), function(i) .cp_quantile(x_m[,i]))
@@ -325,8 +325,10 @@ bcf <- function(y, z, x_control, x_moderate=x_control, pihat, w = NULL,
       ntree_moderate = warm_start$model_params$num_trees_trt
       n_chains = warm_start$model_params$num_sweeps-warm_start$model_params$burnin
 
-      tree_con_name = paste0(save_tree_directory, '/', 'con_trees_ini.txt')
-      tree_mod_name = paste0(save_tree_directory, '/', 'mod_trees_ini.txt')
+      tree_con_name = 'fake_dir/con_trees_ini.txt'
+      tree_mod_name = 'fake_dir/con_trees_ini.txt'
+      #tree_con_name = paste0(save_tree_directory, '/', 'con_trees_ini.txt')
+      #tree_mod_name = paste0(save_tree_directory, '/', 'mod_trees_ini.txt')
 
       # initial run of BCF to extract parameters for initialization (only need 1 iteration)
       fitbcf_ini = bcfoverparRcppClean(y_ = yscale[perm], z_ = z[perm], w_ = w[perm],
@@ -382,7 +384,7 @@ bcf <- function(y, z, x_control, x_moderate=x_control, pihat, w = NULL,
       #pi_mod_sigma = warm_start$sigma0_draws[2,i]
       bscale0_ini = warm_start$b_draws[i, 1]
       bscale1_ini = warm_start$b_draws[i, 2]
-      sigma_ini = warm_start$sigma0_draws[1,i]
+      sigma_ini = warm_start$sigma0_draws[(ntree_control+ntree_moderate),i]
 
       treedraws_con = as.vector(warm_start$treedraws_pr[i])
       treedraws_mod = as.vector(warm_start$treedraws_trt[i])

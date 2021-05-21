@@ -73,13 +73,13 @@ std::istream& operator>>(std::istream& is, tree& t)
 
 	//first node has to be the top one
 	pts[1] = &t; //careful! this is not the first pts, it is pointer of id 1.
-	t.setv(nv[0].v); t.setc_value(0.0); t.setm(nv[0].m); t.setc(nv[0].c);
+	t.setv(nv[0].v); t.setc_value(nv[0].c_value); t.setm(nv[0].m); t.setc(nv[0].c);
 	t.p=0;
 
 	//now loop through the rest of the nodes knowing parent is already there.
 	for(size_t i=1;i!=nv.size();i++) {
 		tree::tree_p np = new tree;
-		np->v = nv[i].v; np->c_value=0.0; np->mu=nv[i].m; np->c = nv[i].c;
+		np->v = nv[i].v; np->c_value=nv[i].c_value; np->mu=nv[i].m; np->c = nv[i].c;
 		tid = nv[i].id;
 		pts[tid] = np;
 		pid = tid/2;
